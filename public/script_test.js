@@ -4,16 +4,23 @@ const startBtn = document.getElementById('start');
 const okno = document.getElementById('okno');
 const panel = document.getElementById('panel')
 
-const pauseBtn = document.getElementById('pause')
-const pauseOverlay = document.getElementById('pauseOverlay');
-const resumeBtn = document.getElementById('resumeBtn');
+const pauseBtn = document.getElementById("pause")
+const abortBtn = document.getElementById("cancel")
+const finishBtn = document.getElementById("finish-early")
 
-const skipBtn = document.getElementById('finish-early')
+const overlays = {
+    pause: document.getElementById('pauseOverlay'),
+    abort: document.getElementById('abortOverlay'),
+    finish: document.getElementById('finishOverlay')
+};
 
-const abortBtn = document.getElementById('cancel')
-const abortOverlay = document.getElementById('abortOverlay');
-const abortYes = document.getElementById('abortYes');
-const abortNo = document.getElementById('abortNo');
+const buttons = {
+    resume: document.getElementById('resumeBtn'),
+    abortYes: document.getElementById('abortYes'),
+    abortNo: document.getElementById('abortNo'),
+    finishYes: document.getElementById('finishYes'),
+    finishNo: document.getElementById('finishNo')
+};
 
 let seconds = 0;
 let minutes = 0;
@@ -37,7 +44,6 @@ const angleTolerance = 0.1; // допустимая погрешность уг�
 const acceleration = 0.1; // % на который увеличивается скорость каждые accInterval минут
 const accInterval = 1.5; // см. строчку выше
 
-// TODO доп: кнопка досрочных родов
 // TODO доп: настройка параметров через интерфейс
 
 // ====== отрисовка ======
@@ -150,39 +156,19 @@ startBtn.addEventListener('click', function () {
     startTest();
 });
 
-// кнопка паузы
-pauseBtn.addEventListener('click', function () {
-    pauseTest();
-    pauseOverlay.classList.add('show');
-});
+pauseBtn.addEventListener('click', () => showOverlay('pause'));
+buttons.resume.addEventListener('click', () => hideOverlay('pause'));
 
-// кнопка продолжить (с паузы)
-resumeBtn.addEventListener('click', function () {
-    pauseOverlay.classList.remove('show');
-    resumeTest();
-});
+abortBtn.addEventListener('click', () => showOverlay('abort'));
+buttons.abortYes.addEventListener('click', () => window.location.href = 'test.html');
+buttons.abortNo.addEventListener('click', () => hideOverlay('abort'));
 
-// кнопка отмены
-abortBtn.addEventListener('click', function () {
-    pauseTest();
-    abortOverlay.classList.add('show');
-});
-
-// подтверждение отмены
-abortYes.addEventListener('click', function () {
-    window.location.href = "test.html";
-});
-
-// отказ отмены
-abortNo.addEventListener('click', function () {
-    abortOverlay.classList.remove('show');
-    resumeTest();
-});
-
-// досрочное завершение теста
-skipBtn.addEventListener('click', function () {
+finishBtn.addEventListener('click', () => showOverlay('finish'));
+buttons.finishYes.addEventListener('click', () => {
+    hideOverlay('finish');
     finishTest();
 });
+buttons.finishNo.addEventListener('click', () => hideOverlay('finish'));
 
 // обработчик нажатия любой клавиши
 document.addEventListener('keydown', ({ key }) => {
@@ -296,9 +282,19 @@ function sendData(username) {
         },
         body: payload
     })
-        .then(response => response.text())
-        .then(result => console.log('Success:', result))
-        .catch(error => console.error('Error:', error));
+        .then(response => {
+            if (!response.ok) {
+                console.error(`Ошибка: ${response.status} ${response.statusText}`);
+                throw new Error("Все плохо, код " + response.status);
+            }
+            return response.text();
+        })
+        .then(result => {
+            console.log("Успех! Все хорошо:", result);
+        })
+        .catch(error => {
+            console.error("Что-то пошло не так:", error.message);
+        });
 }
 
 // переводит массив в LineProtocol для Influx Cloud
@@ -398,4 +394,15 @@ function refreshResults(duration) {
         'hits_center': hits.center,
         'hits_right': hits.right
     })
+}
+
+// ====== оверлеи ======
+function showOverlay(type) {
+    pauseTest();
+    overlays[type].classList.add('show');
+}
+
+function hideOverlay(type) {
+    overlays[type].classList.remove('show');
+    resumeTest();
 }
