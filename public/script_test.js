@@ -37,7 +37,6 @@ const angleTolerance = 0.1; // допустимая погрешность уг�
 const acceleration = 0.1; // % на который увеличивается скорость каждые accInterval минут
 const accInterval = 1.5; // см. строчку выше
 
-// TODO доп: кнопка аборта
 // TODO доп: кнопка досрочных родов
 // TODO доп: настройка параметров через интерфейс
 
@@ -178,6 +177,11 @@ abortYes.addEventListener('click', function () {
 abortNo.addEventListener('click', function () {
     abortOverlay.classList.remove('show');
     resumeTest();
+});
+
+// досрочное завершение теста
+skipBtn.addEventListener('click', function () {
+    finishTest();
 });
 
 // обработчик нажатия любой клавиши
