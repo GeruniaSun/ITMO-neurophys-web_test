@@ -2,7 +2,22 @@ const canvas = document.querySelector("canvas");
 const context = canvas.getContext('2d');
 const startBtn = document.getElementById('start');
 const okno = document.getElementById('okno');
+const panel = document.getElementById('panel')
 
+const pauseBtn = document.getElementById('pause')
+const pauseOverlay = document.getElementById('pauseOverlay');
+const resumeBtn = document.getElementById('resumeBtn');
+
+const skipBtn = document.getElementById('finish-early')
+
+const abortBtn = document.getElementById('cancel')
+const abortOverlay = document.getElementById('abortOverlay');
+const abortYes = document.getElementById('abortYes');
+const abortNo = document.getElementById('abortNo');
+
+let seconds = 0;
+let minutes = 0;
+let paused = false;
 let timerInterval;
 let startTime;
 let continueAnimating = true;
@@ -22,7 +37,6 @@ const angleTolerance = 0.1; // допустимая погрешность уг�
 const acceleration = 0.1; // % на который увеличивается скорость каждые accInterval минут
 const accInterval = 1.5; // см. строчку выше
 
-// TODO доп: кнопка паузы
 // TODO доп: кнопка аборта
 // TODO доп: кнопка досрочных родов
 // TODO доп: настройка параметров через интерфейс
@@ -137,6 +151,35 @@ startBtn.addEventListener('click', function () {
     startTest();
 });
 
+// кнопка паузы
+pauseBtn.addEventListener('click', function () {
+    pauseTest();
+    pauseOverlay.classList.add('show');
+});
+
+// кнопка продолжить (с паузы)
+resumeBtn.addEventListener('click', function () {
+    pauseOverlay.classList.remove('show');
+    resumeTest();
+});
+
+// кнопка отмены
+abortBtn.addEventListener('click', function () {
+    pauseTest();
+    abortOverlay.classList.add('show');
+});
+
+// подтверждение отмены
+abortYes.addEventListener('click', function () {
+    window.location.href = "test.html";
+});
+
+// отказ отмены
+abortNo.addEventListener('click', function () {
+    abortOverlay.classList.remove('show');
+    resumeTest();
+});
+
 // обработчик нажатия любой клавиши
 document.addEventListener('keydown', ({ key }) => {
     const indexMap = { '1': 0, '2': 1, '3': 2 };
@@ -176,18 +219,34 @@ function startTest() {
     baseSpeed = 0.002;
 
     requestAnimationFrame(tick);
+    panel.classList.add("open")
     console.log("дан старт теста")
+}
+
+// останавливает таймер и анимацию
+function pauseTest() {
+    stopTimer();
+    continueAnimating = false;
+    console.log("выполнение теста приостановлено")
+}
+
+// продолжает таймер и анимацию
+function resumeTest() {
+    continueAnimating = true;
+    requestAnimationFrame(tick)
+    continueTimer();
+    console.log("выполнение теста возобновлено")
 }
 
 // выводит интерфейс завершения и отправки результатов
 function finishTest() {
     continueAnimating = false;
     okno.style.backgroundColor = "#EDF0F2";
-    document.querySelector('.canva').style.display = "none";
+    document.querySelector('.canvas').style.display = "none";
     document.querySelector('.finish').style.display = "flex";
 
     printFinalResult();
-    stopTimer();
+    endTimer();
     handleTestResults();
 }
 
@@ -267,36 +326,63 @@ function printFinalResult() {
 
 
 // ====== таймер ======
-
-// запускает таймер и управляет его поведением
 function startTimer() {
     startTime = BigInt(Date.now());
-    let seconds = 0;
-    let minutes = 0;
+    seconds = 0;
+    minutes = 0;
+    paused = false;
 
-    timerInterval = setInterval(function() {
-        seconds++;
-        if (seconds >= 60) {
-            seconds = 0;
-            minutes++;
-        }
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(timerTick, 1000);
+}
 
-        refreshResults(BigInt(60 * minutes + seconds))
+// поставить на паузу
+function stopTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        paused = true;
+    }
+}
 
-        if (minutes === testDuration) { finishTest(); }
-
-        if ((60 * minutes + seconds) % Math.trunc(60 * accInterval) === 0) { baseSpeed *= (1 + acceleration) }
-
-        let secondsStr = seconds < 10 ? '0' + seconds : seconds;
-        let minutesStr = minutes < 10 ? '0' + minutes : minutes;
-        document.getElementById('timer').textContent = minutesStr + ':' + secondsStr;
-    }, 1000);
+// закончить паузу
+function continueTimer() {
+    if (paused && !timerInterval) {
+        paused = false;
+        timerInterval = setInterval(timerTick, 1000);
+    }
 }
 
 // убрать таймер когда время вышло
-function stopTimer() {
+function endTimer() {
     clearInterval(timerInterval);
     return document.getElementById('timer').textContent;
+}
+
+// упавляет поведением таймера
+function timerTick() {
+    seconds++;
+    if (seconds >= 60) {
+        seconds = 0;
+        minutes++;
+    }
+
+    refreshResults(BigInt(60 * minutes + seconds));
+
+    if (minutes === testDuration) {
+        finishTest();
+        endTimer();
+        return;
+    }
+
+    if ((60 * minutes + seconds) % Math.trunc(60 * accInterval) === 0) {
+        baseSpeed *= (1 + acceleration);
+        console.log("скорость была увеличена!")
+    }
+
+    let secondsStr = seconds < 10 ? '0' + seconds : seconds;
+    let minutesStr = minutes < 10 ? '0' + minutes : minutes;
+    document.getElementById('timer').textContent = minutesStr + ':' + secondsStr;
 }
 
 // каждую секунду добавляет запись в массив с результатами
