@@ -20,7 +20,12 @@ let baseSpeed; // изначальная скорость движения кр�
 const testDuration = 20; // длительность теста в минутах
 const angleTolerance = 0.1; // допустимая погрешность угла в радианах
 const acceleration = 0.1; // % на который увеличивается скорость каждые accInterval минут
-const accInterval = 2; // см. строчку выше
+const accInterval = 1.5; // см. строчку выше
+
+// TODO доп: кнопка паузы
+// TODO доп: кнопка аборта
+// TODO доп: кнопка досрочных родов
+// TODO доп: настройка параметров через интерфейс
 
 // ====== отрисовка ======
 const elements = [
@@ -280,7 +285,7 @@ function startTimer() {
 
         if (minutes === testDuration) { finishTest(); }
 
-        if (minutes % accInterval === 0 && seconds === 0) { baseSpeed *= (1 + acceleration) }
+        if ((60 * minutes + seconds) % Math.trunc(60 * accInterval) === 0) { baseSpeed *= (1 + acceleration) }
 
         let secondsStr = seconds < 10 ? '0' + seconds : seconds;
         let minutesStr = minutes < 10 ? '0' + minutes : minutes;
