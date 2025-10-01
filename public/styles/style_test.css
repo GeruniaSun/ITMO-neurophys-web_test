@@ -111,7 +111,7 @@ body {
         font-size: 50px;
     }
 
-    .canva {
+    .canvas {
         display: flex;
         place-content: center;
         place-items: center;
@@ -501,7 +501,7 @@ button#start:hover {
 
 /* показать оверлей */
 .overlay.show {
-    display: flex; /* включаем flex, чтобы центрировать окно */
+    display: flex;
 }
 
 /* окно внутри оверлея */

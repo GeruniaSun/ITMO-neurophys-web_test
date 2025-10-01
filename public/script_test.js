@@ -39,12 +39,16 @@ let errors; // количество ошибок на текущий момен�
 let result; // массив куда кладутся hits и error каждую секунду
 let baseSpeed; // изначальная скорость движения кружков
 
-const testDuration = 20; // длительность теста в минутах
-const angleTolerance = 0.1; // допустимая погрешность угла в радианах
-const acceleration = 0.1; // % на который увеличивается скорость каждые accInterval минут
-const accInterval = 1.5; // см. строчку выше
+const sensitivity = document.getElementById("sensitivity");
+const sensitivityValue = document.getElementById("sensitivityValue");
+const accelerationInput = document.getElementById("acceleration");
+const accelerationValue = document.getElementById("accelerationValue");
 
-// TODO доп: настройка параметров через интерфейс
+// тут указаны значения по умолчанию, юзер может их поменять перед началом в настройках
+let testDuration = 20; // длительность теста в минутах
+let angleTolerance = 0.1; // допустимая погрешность угла в радианах
+let acceleration = 0.1; // % на который увеличивается скорость каждые accInterval минут
+let accInterval = 1.5; // см. строчку выше
 
 // ====== отрисовка ======
 const elements = [
@@ -152,23 +156,55 @@ function star(R, cX, cY, N) {
 startBtn.addEventListener('click', function () {
     document.querySelector(".info").style.display = "none";
     document.getElementById('timer').style.display = 'block';
+
+    const settings = getSettings();
+    testDuration = settings.duration; // длительность теста в минутах
+    angleTolerance = Math.trunc((settings.sensitivity / 5) + 1) / 100; // допустимая погрешность угла в радианах
+    acceleration = settings.acceleration; // % на который увеличивается скорость каждые accInterval минут
+    accInterval = settings.interval; // см. строчку выше
+
     startTimer();
     startTest();
 });
 
+// кнопка паузы
 pauseBtn.addEventListener('click', () => showOverlay('pause'));
+
+// снять с паузы
 buttons.resume.addEventListener('click', () => hideOverlay('pause'));
 
+// кнопка отмены
 abortBtn.addEventListener('click', () => showOverlay('abort'));
+
+// подтвердить отмену
 buttons.abortYes.addEventListener('click', () => window.location.href = 'test.html');
+
+// отменить отмену
 buttons.abortNo.addEventListener('click', () => hideOverlay('abort'));
 
+// кнопка скипа
 finishBtn.addEventListener('click', () => showOverlay('finish'));
+
+// подтвердить скип
 buttons.finishYes.addEventListener('click', () => {
     hideOverlay('finish');
     finishTest();
 });
+
+// отменить скип
 buttons.finishNo.addEventListener('click', () => hideOverlay('finish'));
+
+// показывать возле слайдера значение
+document.addEventListener("DOMContentLoaded", () => {
+    sensitivity.addEventListener("input", () => {
+        sensitivityValue.textContent = sensitivity.value;
+    });
+
+    accelerationInput.addEventListener("input", () => {
+        accelerationValue.textContent = accelerationInput.value;
+    });
+});
+
 
 // обработчик нажатия любой клавиши
 document.addEventListener('keydown', ({ key }) => {
@@ -238,6 +274,7 @@ function finishTest() {
     printFinalResult();
     endTimer();
     handleTestResults();
+    panel.classList.remove('open');
 }
 
 
@@ -376,7 +413,7 @@ function timerTick() {
     }
 
     if ((60 * minutes + seconds) % Math.trunc(60 * accInterval) === 0) {
-        baseSpeed *= (1 + acceleration);
+        baseSpeed *= (1 + acceleration / 100);
         console.log("скорость была увеличена!")
     }
 
@@ -405,4 +442,13 @@ function showOverlay(type) {
 function hideOverlay(type) {
     overlays[type].classList.remove('show');
     resumeTest();
+}
+
+function getSettings() {
+    return {
+        duration: parseInt(document.getElementById("duration").value, 10),
+        sensitivity: parseInt(document.getElementById("sensitivity").value, 10),
+        acceleration: parseInt(document.getElementById("acceleration").value, 10),
+        interval: parseFloat(document.getElementById("interval").value)
+    };
 }
