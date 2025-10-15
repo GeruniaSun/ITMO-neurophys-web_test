@@ -1,0 +1,88 @@
+@use '../utils/variables' as *;
+@use '../utils/mixins' as *;
+
+// Компонент окна
+.container .block #okno {
+  @include flex-center;
+  height: 70%;
+  width: 70%;
+  border: solid 2px $border-color;
+  border-radius: $border-radius-large;
+
+  .numberField {
+    @include flex-center;
+    font-size: 50px;
+  }
+
+  .canvas {
+    @include flex-center;
+  }
+
+  .start {
+    @include flex-column-center;
+    width: 100%;
+    height: 100%;
+    display: flex;
+  }
+
+  .finish {
+    display: none !important;
+    @include flex-column-center;
+    width: 100%;
+    height: 100%;
+    
+    &.show {
+      display: flex !important;
+      animation: fadein 2s forwards;
+    }
+  }
+
+  .notification {
+    @include flex-center;
+    width: 100%;
+    height: auto;
+    padding: $margin-medium;
+  }
+
+  img {
+    box-sizing: content-box;
+    width: 60%;
+    place-content: center;
+  }
+
+  .icons {
+    display: flex;
+    flex-direction: row;
+    place-content: center;
+    place-items: center;
+    width: 100%;
+    height: auto;
+
+    div {
+      @include flex-column-center;
+      width: auto;
+      height: auto;
+      padding: $margin-medium;
+
+      a {
+        color: black;
+        text-decoration: none;
+        font-weight: bold;
+        padding: $padding-small;
+        border-radius: $border-radius-small;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background-color: $primary-green;
+          color: $white;
+        }
+      }
+
+      &:hover:not(.sound) {
+        cursor: pointer;
+        border-radius: $border-radius-large;
+        background: $gradient-primary;
+      }
+    }
+  }
+}

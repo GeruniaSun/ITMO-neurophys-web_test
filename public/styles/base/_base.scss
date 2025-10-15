@@ -1,0 +1,34 @@
+@use '../utils/variables' as *;
+
+// Базовые стили и сброс
+* {
+  margin: 0;
+  padding: 0;
+  font-family: $font-primary;
+}
+
+a {
+  text-decoration: none;
+}
+
+// Стили для выделения текста
+::-moz-selection {
+  color: $white;
+  background-color: $selection-color;
+}
+
+::selection {
+  color: $white;
+  background-color: $selection-color;
+}
+
+// Иконки
+i.material-icons,
+i.material-symbols-outlined {
+  font-size: 20px;
+  padding: 2px;
+}
+
+body {
+  background-color: $primary-bg;
+}

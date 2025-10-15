@@ -1,0 +1,67 @@
+@use '../utils/variables' as *;
+@use '../utils/mixins' as *;
+
+// Основные компоненты макета
+.container {
+  @include flex-column-center;
+  width: 100%;
+  height: 100%;
+
+  #line {
+    place-content: center;
+    width: 30%;
+    height: 2dvh;
+    border: solid 2px $border-color;
+    border-radius: $border-radius-medium;
+  }
+}
+
+.block {
+  @include flex-column-center;
+  height: 70dvh;
+  width: 100%;
+  padding: $padding-large 0;
+}
+
+.info {
+  display: flex;
+  background-color: $primary-bg;
+  position: absolute;
+  place-content: center;
+  height: 80%;
+  width: 80%;
+  border: solid 2px $border-color;
+  border-radius: $border-radius-xl;
+  top: 10%;
+
+  .rules {
+    @include flex-column-center;
+  }
+
+  h1 {
+    padding: $padding-large;
+  }
+
+  h4 {
+    padding: 0.5dvh 1dvw;
+  }
+
+  p {
+    padding: 2dvh;
+  }
+}
+
+.question {
+  width: 50%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-content: start;
+  place-content: center;
+  right: 70%;
+  top: 50%;
+
+  input {
+    margin-right: $margin-medium;
+  }
+}

@@ -1,0 +1,197 @@
+@use '../utils/variables' as *;
+@use '../utils/mixins' as *;
+
+// Компоненты: кнопки, формы, таблицы
+
+// Кнопки
+#buttons {
+  @include flex-column-center;
+  width: 100%;
+  height: auto;
+
+  button {
+    @include flex-center;
+    @include button-base;
+    width: 70%;
+    margin: $margin-large;
+    padding: 4dvh;
+    height: 10%;
+    border-radius: $border-radius-large;
+    font-size: 1rem;
+    box-shadow: $shadow-dark 0 0 4px;
+  }
+}
+
+button#start {
+  background: $gradient-primary;
+
+  &:hover {
+    background: $gradient-primary-hover;
+  }
+}
+
+#testbuttons {
+  display: flex;
+  flex-direction: row;
+  place-content: center;
+  place-items: center;
+  margin-top: $margin-medium;
+
+  .btn {
+    width: 100%;
+    height: auto;
+    background-color: $primary-bg;
+    border-radius: $border-radius-small;
+    cursor: pointer;
+    padding: $padding-small;
+
+    &:hover,
+    &:active {
+      background-color: $gray-medium;
+    }
+  }
+}
+
+#nextbutton {
+  border-radius: $border-radius-medium;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  padding: $padding-small;
+  @include flex-center;
+  margin-top: -$margin-large;
+  margin-bottom: $margin-large;
+}
+
+#next {
+  cursor: pointer;
+  place-content: center;
+  place-items: center;
+  margin-top: -$margin-large;
+  width: 60%;
+}
+
+// Формы
+#form {
+  display: none;
+  align-content: space-evenly;
+  width: 100%;
+  place-items: center;
+  flex-direction: column;
+  margin-top: -100px;
+  margin-bottom: $padding-small;
+
+  .row {
+    display: flex;
+    flex-direction: row;
+    align-content: space-evenly;
+    padding: $padding-small;
+
+    input {
+      width: 100%;
+      text-align: center;
+      margin: 0 $padding-small;
+      -moz-appearance: textfield;
+      background-color: $gray-light;
+      border-radius: $border-radius-small;
+      cursor: pointer;
+      border: 1px inset black;
+    }
+  }
+}
+
+#answer {
+  height: 100%;
+  text-align: center;
+  margin-bottom: $margin-medium;
+  -moz-appearance: textfield;
+  background-color: $white;
+  cursor: pointer;
+}
+
+.user-input {
+  display: none;
+  margin-top: $margin-medium;
+  text-align: center;
+
+  &.visible {
+    display: block;
+  }
+
+  input {
+    @include input-base;
+    width: 300px;
+    margin-right: $padding-small;
+  }
+
+  button {
+    @include button-base;
+    width: 120px;
+    padding: $padding-small;
+    border-radius: $border-radius-small;
+    background-color: #a4f9e6;
+    color: $white;
+    font-size: 16px;
+    @include shadow-base;
+    white-space: nowrap;
+
+    &:hover {
+      background-color: #a1e9f7;
+    }
+  }
+}
+
+// Таблицы и ячейки
+#table {
+  height: 100%;
+  width: 100%;
+  border-radius: $border-radius-medium;
+}
+
+.cell {
+  cursor: pointer;
+
+  &.pressed {
+    background-color: $gray-medium;
+  }
+}
+
+.image {
+  cursor: pointer;
+
+  &.pressed {
+    background-color: $gray-medium;
+    border-radius: $border-radius-medium;
+    border: inset 2px rgba(0, 0, 0, 0.5);
+  }
+}
+
+// Состояния элементов
+#time {
+  display: none;
+}
+
+#success {
+  display: none;
+  font-size: 48px;
+  font-weight: bold;
+  margin-top: $margin-medium;
+  text-align: center;
+
+  &.visible {
+    display: block;
+  }
+}
+
+#timer {
+  font-family: $font-secondary;
+  font-size: 24px;
+  text-align: center;
+  margin-bottom: $margin-medium;
+  color: $text-color;
+  display: none;
+
+  &.visible {
+    display: block;
+  }
+}

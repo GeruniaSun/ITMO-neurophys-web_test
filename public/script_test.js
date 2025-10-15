@@ -41,6 +41,7 @@ let baseSpeed; // изначальная скорость движения кр�
 
 const sensitivity = document.getElementById("sensitivity");
 const sensitivityValue = document.getElementById("sensitivityValue");
+
 const accelerationInput = document.getElementById("acceleration");
 const accelerationValue = document.getElementById("accelerationValue");
 
@@ -49,6 +50,9 @@ let testDuration = 20; // длительность теста в минутах
 let angleTolerance = 0.1; // допустимая погрешность угла в радианах
 let acceleration = 0.1; // % на который увеличивается скорость каждые accInterval минут
 let accInterval = 1.5; // см. строчку выше
+
+// TODO считать пропуски
+// TODO структура css
 
 // ====== отрисовка ======
 const elements = [
@@ -244,6 +248,10 @@ function startTest() {
     result = [];
     baseSpeed = 0.002;
 
+    // Скрываем блок завершения и показываем canvas
+    document.querySelector('.finish').classList.remove('show');
+    document.querySelector('.canvas').style.display = "block";
+
     requestAnimationFrame(tick);
     panel.classList.add("open")
     console.log("дан старт теста")
@@ -269,7 +277,7 @@ function finishTest() {
     continueAnimating = false;
     okno.style.backgroundColor = "#EDF0F2";
     document.querySelector('.canvas').style.display = "none";
-    document.querySelector('.finish').style.display = "flex";
+    document.querySelector('.finish').classList.add('show');
 
     printFinalResult();
     endTimer();

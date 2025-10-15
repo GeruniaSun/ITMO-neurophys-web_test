@@ -1,0 +1,89 @@
+@use '../utils/variables' as *;
+@use '../utils/mixins' as *;
+
+// Боковая панель с кнопками паузы/отмены/скипа
+.side-panel {
+  position: fixed;
+  top: 0;
+  left: -70px; // скрыта
+  width: 70px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  box-shadow: 2px 0 8px $shadow-light;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 80px;
+  gap: 25px;
+  transition: left 0.3s ease;
+  z-index: $z-side-panel;
+
+  &.open,
+  &:hover {
+    left: 0;
+  }
+}
+
+.side-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  background: $gradient-side;
+  color: $white;
+  font-size: 24px;
+  @include flex-center;
+  @include shadow-medium;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+// Общий стиль для всех оверлеев
+.overlay {
+  @include overlay-base;
+}
+
+// Окно внутри оверлея
+.overlay-window {
+  background: #f0f4f8;
+  padding: 30px $margin-large;
+  border-radius: $border-radius-large;
+  text-align: center;
+  @include shadow-large;
+  color: $text-color;
+  font-size: $margin-medium;
+  min-width: 280px;
+  @include flex-column-center;
+  transform: scale(0.9);
+  transition: transform 0.2s ease;
+
+  // Анимация появления окна
+  .overlay.show & {
+    transform: scale(1);
+  }
+
+  button {
+    @include button-base;
+    margin-top: $margin-medium;
+    padding: $padding-small $margin-medium;
+    border-radius: $border-radius-medium;
+    background: $gradient-side;
+    color: $white;
+    font-weight: bold;
+    font-size: 16px;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: $gradient-side-hover;
+    }
+  }
+}

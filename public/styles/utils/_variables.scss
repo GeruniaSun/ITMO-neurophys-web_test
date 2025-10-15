@@ -1,0 +1,43 @@
+// Переменные цветов
+$primary-bg: #EDF0F2;
+$primary-green: #CCFA5B;
+$selection-color: #AAD94A;
+$border-color: rgba(0, 0, 0, 0.2);
+$shadow-light: rgba(0, 0, 0, 0.1);
+$shadow-medium: rgba(0, 0, 0, 0.2);
+$shadow-dark: rgba(0, 0, 0, 0.3);
+$text-color: #333;
+$white: #fff;
+$gray-light: #f0f0f0;
+$gray-medium: #DFDFDF;
+$gray-bg: #f9f9f9;
+
+// Градиенты
+$gradient-primary: linear-gradient(90deg, rgba(201, 252, 183, 1) 0%, rgba(164, 249, 230, 1) 50%, rgba(161, 233, 247, 1) 100%);
+$gradient-primary-hover: linear-gradient(90deg, rgba(196, 243, 180, 1) 0%, rgba(146, 218, 202, 1) 50%, rgba(143, 206, 219, 1) 100%);
+$gradient-side: linear-gradient(145deg, #a3d9ff, #94f9d7);
+$gradient-side-hover: linear-gradient(90deg, #94f9d7, #7ed9e0);
+$gradient-settings: linear-gradient(135deg, #e0f7fa, #e8f5e9);
+
+// Размеры и отступы
+$border-radius-small: 5px;
+$border-radius-medium: 10px;
+$border-radius-large: 20px;
+$border-radius-xl: 40px;
+
+$padding-small: 10px;
+$padding-medium: 20px;
+$padding-large: 40px;
+
+$margin-small: 10px;
+$margin-medium: 20px;
+$margin-large: 40px;
+
+// Шрифты
+$font-primary: "Montserrat", sans-serif;
+$font-secondary: 'Quicksand', sans-serif;
+
+// Z-index
+$z-header: 2;
+$z-side-panel: 1000;
+$z-overlay: 2000;

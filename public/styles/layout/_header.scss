@@ -1,0 +1,49 @@
+@use '../utils/variables' as *;
+@use '../utils/mixins' as *;
+
+// Стили для шапки
+header {
+  background-color: $primary-bg;
+  box-shadow: 3px 3px 5px $shadow-light;
+  width: auto;
+  height: auto;
+  display: flex;
+  place-content: flex-end;
+  position: sticky;
+  top: 0;
+  z-index: $z-header;
+
+  ul.topper {
+    width: 100%;
+    list-style: none;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  li {
+    height: 50px;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+  }
+
+  a {
+    height: 100%;
+    padding: 0 30px;
+    display: flex;
+    align-items: center;
+    color: black;
+    text-decoration: none;
+
+    &:hover {
+      background-color: $primary-green;
+    }
+  }
+
+  .topper li:first-child {
+    font-weight: bold;
+    margin-right: auto;
+    width: auto;
+  }
+}
