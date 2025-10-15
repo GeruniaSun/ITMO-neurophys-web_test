@@ -33,11 +33,13 @@ canvas.width = 900;
 canvas.height = 400;
 const radius = 130;
 
-// эти четыре штуки инициализируются при старте теста, чтоб старые результаты убрать если они вдруг есть
+// эти пять штук инициализируются при старте теста, чтоб старые результаты убрать если они вдруг есть
 let hits; // количество попаданий по каждой из звезд на текущий момент
 let errors; // количество ошибок на текущий момент
 let result; // массив куда кладутся hits и error каждую секунду
 let baseSpeed; // изначальная скорость движения кружков
+let counts; // количество полных оборотов для каждого круга
+let previousAngles; // предыдущие углы для определения полных оборотов
 
 const sensitivity = document.getElementById("sensitivity");
 const sensitivityValue = document.getElementById("sensitivityValue");
@@ -50,9 +52,6 @@ let testDuration = 20; // длительность теста в минутах
 let angleTolerance = 0.1; // допустимая погрешность угла в радианах
 let acceleration = 0.1; // % на который увеличивается скорость каждые accInterval минут
 let accInterval = 1.5; // см. строчку выше
-
-// TODO считать пропуски
-// TODO структура css
 
 // ====== отрисовка ======
 const elements = [
@@ -84,9 +83,24 @@ const targetAngles = elements.map(el => Math.atan2(el.starOffset.y, el.starOffse
 function tick() {
     if (!continueAnimating) return;
 
-    // Обновляем углы
-    elements.forEach(el => {
+    // Обновляем углы и считаем полные обороты
+    elements.forEach((el, index) => {
+        const previousAngle = el.angle;
         el.angle += el.speed * baseSpeed;
+        
+        // Проверяем, прошел ли круг полный оборот (через 2π)
+        if (previousAngles) {
+            const previousNormalized = ((previousAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+            const currentNormalized = ((el.angle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+            
+            // Если угол перешел через 0 (полный оборот)
+            if (previousNormalized > currentNormalized + Math.PI) {
+                counts[index]++;
+                if (counts[index] % 10 === 0) {
+                    console.log(`${index + 1}-ый круг совершил ${counts[index]}-ый оборот!`);
+                }
+            }
+        }
     });
 
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -247,6 +261,8 @@ function startTest() {
     errors = 0;
     result = [];
     baseSpeed = 0.002;
+    counts = [0, 0, 0]; // счетчики полных оборотов для левого, центрального и правого кругов
+    previousAngles = elements.map(el => el.angle); // сохраняем начальные углы
 
     // Скрываем блок завершения и показываем canvas
     document.querySelector('.finish').classList.remove('show');
@@ -349,7 +365,10 @@ function parseToLine(user, records) {
             `errors=${record.errors}i`,
             `hits_left=${record.hits_left}i`,
             `hits_center=${record.hits_center}i`,
-            `hits_right=${record.hits_right}i`
+            `hits_right=${record.hits_right}i`,
+            `counts_left=${record.counts_left}i`,
+            `counts_center=${record.counts_center}i`,
+            `counts_right=${record.counts_right}i`
         ].join(',');
 
         const timestamp = BigInt(record.timestamp * 1_000_000n).toString();
@@ -360,13 +379,16 @@ function parseToLine(user, records) {
 
 // для вывода красивого лога по результатам
 function printFinalResult() {
-    console.log("=" * 15);
+    console.log("=".repeat(30));
     console.log("ИТОГ");
     console.log("количество ошибок: " + errors);
     console.log("попаданий по левому кругу: " + hits.left);
     console.log("попаданий по центральному кругу: " + hits.center);
     console.log("попаданий по правому кругу: " + hits.right);
-    console.log("=" * 15);
+    console.log("полных оборотов левого круга: " + counts[0]);
+    console.log("полных оборотов центрального круга: " + counts[1]);
+    console.log("полных оборотов правого круга: " + counts[2]);
+    console.log("=".repeat(30));
 }
 
 
@@ -437,7 +459,10 @@ function refreshResults(duration) {
         'errors': errors,
         'hits_left': hits.left,
         'hits_center': hits.center,
-        'hits_right': hits.right
+        'hits_right': hits.right,
+        'counts_left': counts[0],
+        'counts_center': counts[1],
+        'counts_right': counts[2]
     })
 }
 
