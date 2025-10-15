@@ -1,25 +1,44 @@
-const canvas = document.querySelector("canvas");
-const context = canvas.getContext('2d');
-const startBtn = document.getElementById('start');
-const okno = document.getElementById('okno');
-const panel = document.getElementById('panel')
-
-const pauseBtn = document.getElementById("pause")
-const abortBtn = document.getElementById("cancel")
-const finishBtn = document.getElementById("finish-early")
-
-const overlays = {
-    pause: document.getElementById('pauseOverlay'),
-    abort: document.getElementById('abortOverlay'),
-    finish: document.getElementById('finishOverlay')
+const CONFIG = {
+    CANVAS: { width: 900, height: 400 },
+    RADIUS: 130,
+    STAR_RADIUS: 15,
+    POINT_RADIUS: 10,
+    COLORS: {
+        GREEN: "#95c29f",
+        BLUE: "#94bff9", 
+        ORANGE: "#f8b25f",
+        POINT: "#f8c4f3"
+    }
 };
 
-const buttons = {
-    resume: document.getElementById('resumeBtn'),
-    abortYes: document.getElementById('abortYes'),
-    abortNo: document.getElementById('abortNo'),
-    finishYes: document.getElementById('finishYes'),
-    finishNo: document.getElementById('finishNo')
+const canvas = document.querySelector("canvas");
+const context = canvas.getContext('2d');
+canvas.width = CONFIG.CANVAS.width;
+canvas.height = CONFIG.CANVAS.height;
+
+const DOM = {
+    startBtn: document.getElementById('start'),
+    okno: document.getElementById('okno'),
+    panel: document.getElementById('panel'),
+    info: document.querySelector(".info"),
+    timer: document.getElementById('timer'),
+    canvas: document.querySelector('.canvas'),
+    finish: document.querySelector('.finish'),
+    pauseBtn: document.getElementById("pause"),
+    abortBtn: document.getElementById("cancel"),
+    finishBtn: document.getElementById("finish-early"),
+    overlays: {
+        pause: document.getElementById('pauseOverlay'),
+        abort: document.getElementById('abortOverlay'),
+        finish: document.getElementById('finishOverlay')
+    },
+    buttons: {
+        resume: document.getElementById('resumeBtn'),
+        abortYes: document.getElementById('abortYes'),
+        abortNo: document.getElementById('abortNo'),
+        finishYes: document.getElementById('finishYes'),
+        finishNo: document.getElementById('finishNo')
+    }
 };
 
 let seconds = 0;
@@ -29,9 +48,6 @@ let timerInterval;
 let startTime;
 let continueAnimating = true;
 
-canvas.width = 900;
-canvas.height = 400;
-const radius = 130;
 
 // эти пять штук инициализируются при старте теста, чтоб старые результаты убрать если они вдруг есть
 let hits; // количество попаданий по каждой из звезд на текущий момент
@@ -57,44 +73,40 @@ let accInterval = 1.5; // см. строчку выше
 const elements = [
     {
         pos: 1/6,
-        starOffset: { x: 0, y: radius },
-        color: "#95c29f",
+        starOffset: { x: 0, y: CONFIG.RADIUS },
+        color: CONFIG.COLORS.GREEN,
         angle: Math.PI * ((Math.random() * 0.2) - 0.1),
         speed: 7
     },
     {
         pos: 3/6,
-        starOffset: { x: -radius, y: 0 },
-        color: "#94bff9",
+        starOffset: { x: -CONFIG.RADIUS, y: 0 },
+        color: CONFIG.COLORS.BLUE,
         angle: Math.PI * ((Math.random() * 0.2) - 0.1),
         speed: 10
     },
     {
         pos: 5/6,
-        starOffset: { x: 0, y: -radius },
-        color: "#f8b25f",
+        starOffset: { x: 0, y: -CONFIG.RADIUS },
+        color: CONFIG.COLORS.ORANGE,
         angle: Math.PI * ((Math.random() * 0.2) - 0.1),
         speed: 5
     }
 ];
 const targetAngles = elements.map(el => Math.atan2(el.starOffset.y, el.starOffset.x));
 
-// обновляет положение кружочков
 function tick() {
     if (!continueAnimating) return;
 
-    // Обновляем углы и считаем полные обороты
     elements.forEach((el, index) => {
         const previousAngle = el.angle;
         el.angle += el.speed * baseSpeed;
         
-        // Проверяем, прошел ли круг полный оборот (через 2π)
         if (previousAngles) {
-            const previousNormalized = ((previousAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-            const currentNormalized = ((el.angle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+            const prevNorm = normalizeAngle(previousAngle);
+            const currNorm = normalizeAngle(el.angle);
             
-            // Если угол перешел через 0 (полный оборот)
-            if (previousNormalized > currentNormalized + Math.PI) {
+            if (prevNorm > Math.PI / 2 && currNorm < -Math.PI / 2) {
                 counts[index]++;
                 if (counts[index] % 10 === 0) {
                     console.log(`${index + 1}-ый круг совершил ${counts[index]}-ый оборот!`);
@@ -103,42 +115,36 @@ function tick() {
         }
     });
 
-    context.clearRect(0, 0, canvas.width, canvas.height);
     drawElements();
     requestAnimationFrame(tick);
 }
 
-// отрисовывает все фигуры
+const CENTER_Y = CONFIG.CANVAS.height / 2;
+const CIRCLE_POSITIONS = elements.map(el => CONFIG.CANVAS.width * el.pos);
+
 function drawElements() {
-    const centerY = canvas.height / 2;
-
-    // Круги
-    elements.forEach(el => {
+    context.clearRect(0, 0, CONFIG.CANVAS.width, CONFIG.CANVAS.height);
+    
+    elements.forEach((el, index) => {
+        const x = CIRCLE_POSITIONS[index];
+        
         context.beginPath();
-        context.arc(canvas.width * el.pos, centerY, radius, 0, Math.PI * 2);
+        context.arc(x, CENTER_Y, CONFIG.RADIUS, 0, Math.PI * 2);
         context.stroke();
-    });
-
-    // Звезды
-    elements.forEach(el => {
+        
         context.beginPath();
-        star(15, canvas.width * el.pos + el.starOffset.x, centerY + el.starOffset.y, 6);
+        star(CONFIG.STAR_RADIUS, x + el.starOffset.x, CENTER_Y + el.starOffset.y, 6);
         context.fillStyle = el.color;
         context.fill();
         context.stroke();
-    });
-
-    // Точки
-    elements.forEach(el => {
+        
         context.beginPath();
         context.arc(
-            canvas.width * el.pos + radius * Math.cos(el.angle),
-            centerY + radius * Math.sin(el.angle),
-            10,
-            0,
-            Math.PI * 2
+            x + CONFIG.RADIUS * Math.cos(el.angle),
+            CENTER_Y + CONFIG.RADIUS * Math.sin(el.angle),
+            CONFIG.POINT_RADIUS, 0, Math.PI * 2
         );
-        context.fillStyle = "#f8c4f3";
+        context.fillStyle = CONFIG.COLORS.POINT;
         context.fill();
         context.stroke();
     });
@@ -170,47 +176,31 @@ function star(R, cX, cY, N) {
 
 // ====== обработка кнопок ======
 
-// запускает тест при нажатии на соответствующую кнопку
-startBtn.addEventListener('click', function () {
-    document.querySelector(".info").style.display = "none";
-    document.getElementById('timer').style.display = 'block';
+DOM.startBtn.addEventListener('click', function () {
+    DOM.info.style.display = "none";
+    DOM.timer.style.display = 'block';
 
     const settings = getSettings();
-    testDuration = settings.duration; // длительность теста в минутах
-    angleTolerance = Math.trunc((settings.sensitivity / 5) + 1) / 100; // допустимая погрешность угла в радианах
-    acceleration = settings.acceleration; // % на который увеличивается скорость каждые accInterval минут
-    accInterval = settings.interval; // см. строчку выше
+    testDuration = settings.duration;
+    angleTolerance = Math.trunc((settings.sensitivity / 5) + 1) / 100;
+    acceleration = settings.acceleration;
+    accInterval = settings.interval;
 
     startTimer();
     startTest();
 });
 
-// кнопка паузы
-pauseBtn.addEventListener('click', () => showOverlay('pause'));
-
-// снять с паузы
-buttons.resume.addEventListener('click', () => hideOverlay('pause'));
-
-// кнопка отмены
-abortBtn.addEventListener('click', () => showOverlay('abort'));
-
-// подтвердить отмену
-buttons.abortYes.addEventListener('click', () => window.location.href = 'test.html');
-
-// отменить отмену
-buttons.abortNo.addEventListener('click', () => hideOverlay('abort'));
-
-// кнопка скипа
-finishBtn.addEventListener('click', () => showOverlay('finish'));
-
-// подтвердить скип
-buttons.finishYes.addEventListener('click', () => {
+DOM.pauseBtn.addEventListener('click', () => showOverlay('pause'));
+DOM.buttons.resume.addEventListener('click', () => hideOverlay('pause'));
+DOM.abortBtn.addEventListener('click', () => showOverlay('abort'));
+DOM.buttons.abortYes.addEventListener('click', () => window.location.href = 'test.html');
+DOM.buttons.abortNo.addEventListener('click', () => hideOverlay('abort'));
+DOM.finishBtn.addEventListener('click', () => showOverlay('finish'));
+DOM.buttons.finishYes.addEventListener('click', () => {
     hideOverlay('finish');
     finishTest();
 });
-
-// отменить скип
-buttons.finishNo.addEventListener('click', () => hideOverlay('finish'));
+DOM.buttons.finishNo.addEventListener('click', () => hideOverlay('finish'));
 
 // показывать возле слайдера значение
 document.addEventListener("DOMContentLoaded", () => {
@@ -224,22 +214,26 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-// обработчик нажатия любой клавиши
-document.addEventListener('keydown', ({ key }) => {
+let lastKeyTime = 0;
+const KEY_DEBOUNCE = 100;
+
+document.addEventListener('keydown', ({ key, timeStamp }) => {
+    if (timeStamp - lastKeyTime < KEY_DEBOUNCE) return;
+    lastKeyTime = timeStamp;
+
     const indexMap = { '1': 0, '2': 1, '3': 2 };
+    const hitKeys = ['left', 'center', 'right'];
 
     if (indexMap[key] !== undefined) {
         const index = indexMap[key];
         const isClose = areAnglesClose(elements[index].angle, targetAngles[index], angleTolerance);
 
-        okno.style.border = `solid 15px ${elements[index].color}`;
-
-        // сброс подсветки
+        DOM.okno.style.border = `solid 15px ${elements[index].color}`;
         setTimeout(() => {
-            okno.style.border = 'solid 2px rgba(0, 0, 0, 0.2)';
+            DOM.okno.style.border = 'solid 2px rgba(0, 0, 0, 0.2)';
         }, 300);
 
-        isClose ? hits[['left', 'center', 'right'][index]]++ : errors++;
+        isClose ? hits[hitKeys[index]]++ : errors++;
     } else { errors++; }
 });
 
@@ -261,16 +255,15 @@ function startTest() {
     errors = 0;
     result = [];
     baseSpeed = 0.002;
-    counts = [0, 0, 0]; // счетчики полных оборотов для левого, центрального и правого кругов
-    previousAngles = elements.map(el => el.angle); // сохраняем начальные углы
+    counts = [0, 0, 0];
+    previousAngles = elements.map(el => el.angle);
 
-    // Скрываем блок завершения и показываем canvas
-    document.querySelector('.finish').classList.remove('show');
-    document.querySelector('.canvas').style.display = "block";
-
+    DOM.finish.classList.remove('show');
+    DOM.canvas.style.display = "block";
+    DOM.panel.classList.add("open");
+    
     requestAnimationFrame(tick);
-    panel.classList.add("open")
-    console.log("дан старт теста")
+    console.log("дан старт теста");
 }
 
 // останавливает таймер и анимацию
@@ -291,14 +284,14 @@ function resumeTest() {
 // выводит интерфейс завершения и отправки результатов
 function finishTest() {
     continueAnimating = false;
-    okno.style.backgroundColor = "#EDF0F2";
-    document.querySelector('.canvas').style.display = "none";
-    document.querySelector('.finish').classList.add('show');
+    DOM.okno.style.backgroundColor = "#EDF0F2";
+    DOM.canvas.style.display = "none";
+    DOM.finish.classList.add('show');
 
     printFinalResult();
     endTimer();
     handleTestResults();
-    panel.classList.remove('open');
+    DOM.panel.classList.remove('open');
 }
 
 
@@ -423,7 +416,7 @@ function continueTimer() {
 // убрать таймер когда время вышло
 function endTimer() {
     clearInterval(timerInterval);
-    return document.getElementById('timer').textContent;
+    return DOM.timer.textContent;
 }
 
 // упавляет поведением таймера
@@ -449,7 +442,7 @@ function timerTick() {
 
     let secondsStr = seconds < 10 ? '0' + seconds : seconds;
     let minutesStr = minutes < 10 ? '0' + minutes : minutes;
-    document.getElementById('timer').textContent = minutesStr + ':' + secondsStr;
+    DOM.timer.textContent = minutesStr + ':' + secondsStr;
 }
 
 // каждую секунду добавляет запись в массив с результатами
@@ -469,19 +462,26 @@ function refreshResults(duration) {
 // ====== оверлеи ======
 function showOverlay(type) {
     pauseTest();
-    overlays[type].classList.add('show');
+    DOM.overlays[type].classList.add('show');
 }
 
 function hideOverlay(type) {
-    overlays[type].classList.remove('show');
+    DOM.overlays[type].classList.remove('show');
     resumeTest();
 }
 
 function getSettings() {
-    return {
-        duration: parseInt(document.getElementById("duration").value, 10),
-        sensitivity: parseInt(document.getElementById("sensitivity").value, 10),
-        acceleration: parseInt(document.getElementById("acceleration").value, 10),
-        interval: parseFloat(document.getElementById("interval").value)
-    };
+    const duration = parseInt(document.getElementById("duration").value, 10);
+    const sensitivity = parseInt(document.getElementById("sensitivity").value, 10);
+    const acceleration = parseInt(document.getElementById("acceleration").value, 10);
+    const interval = parseFloat(document.getElementById("interval").value);
+    
+    if (duration < 1 || duration > 60) {
+        throw new Error('Длительность должна быть от 1 до 60 минут');
+    }
+    if (sensitivity < 0 || sensitivity > 100) {
+        throw new Error('Чувствительность должна быть от 0 до 100%');
+    }
+    
+    return { duration, sensitivity, acceleration, interval };
 }
