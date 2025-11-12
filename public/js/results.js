@@ -48,6 +48,35 @@ function sendData(username) {
     console.log("отправляем данные от " + username);
     const payload = parseToLine(username, result);
 
+    // Преобразуем массив в строку JSON
+
+    function replacer(key, value) {
+        if (typeof value === 'bigint') {
+            return value.toString();
+        }
+        return value;
+    }
+    const jsonString = JSON.stringify(result, replacer);
+
+    // Создаем Blob с типом application/json
+    const blob = new Blob([jsonString], { type: 'application/json' });
+
+    // Создаем ссылку для скачивания
+    const url = URL.createObjectURL(blob);
+
+    // Создаем элемент <a> для скачивания файла
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = username + '.json'; // Имя файла
+
+    // Добавляем элемент в DOM и кликаем по нему
+    document.body.appendChild(a);
+    a.click();
+
+    // Удаляем элемент из DOM и освобождаем URL
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
     fetch(`${INFLUX_CONFIG.url}?org=${INFLUX_CONFIG.org}&bucket=${INFLUX_CONFIG.bucket}`, {
         method: 'POST',
         headers: {
