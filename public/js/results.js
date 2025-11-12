@@ -35,6 +35,7 @@ export function handleTestResults() {
         const username = input.value;
         if (username) {
             sendData(username);
+            saveData(username); // сохранение локально
             userInputDiv.classList.remove('visible');
             success.classList.add('visible');
         } else {
@@ -43,13 +44,10 @@ export function handleTestResults() {
     });
 }
 
-// отправляет данные в Influx Cloud
-function sendData(username) {
-    console.log("отправляем данные от " + username);
-    const payload = parseToLine(username, result);
-
-    // Преобразуем массив в строку JSON
-
+// функция для локального сохранения
+// а то блять в инфлюх чета нихуя не отправляется больно данных дохуя
+function saveData(username) {
+    // функция для приведения бигинта к строке, а то не дает стригифаится
     function replacer(key, value) {
         if (typeof value === 'bigint') {
             return value.toString();
@@ -60,22 +58,24 @@ function sendData(username) {
 
     // Создаем Blob с типом application/json
     const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob); // Создаем ссылку для скачивания
 
-    // Создаем ссылку для скачивания
-    const url = URL.createObjectURL(blob);
-
-    // Создаем элемент <a> для скачивания файла
+    // Создаем элемент <a> для скачивания файла (он не отобразится, просто сразу скачаем)
     const a = document.createElement('a');
     a.href = url;
     a.download = username + '.json'; // Имя файла
-
-    // Добавляем элемент в DOM и кликаем по нему
-    document.body.appendChild(a);
+    document.body.appendChild(a); // Добавляем элемент в DOM и кликаем по нему
     a.click();
 
     // Удаляем элемент из DOM и освобождаем URL
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// отправляет данные в Influx Cloud
+function sendData(username) {
+    console.log("отправляем данные от " + username);
+    const payload = parseToLine(username, result);
 
     fetch(`${INFLUX_CONFIG.url}?org=${INFLUX_CONFIG.org}&bucket=${INFLUX_CONFIG.bucket}`, {
         method: 'POST',
